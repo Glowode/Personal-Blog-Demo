@@ -1,22 +1,18 @@
 # Footer Design
 
 ## Status
-Decided for TASK-1088 (architecture decision only; footer is not implemented in this task).
+Implemented in TASK-1090.
 
 ## Current Repository Structure
-As of this task, the repository contains **no root layout file yet**:
-
-- No `src/App.jsx`, `src/layout.tsx`, `index.html`, or other main shell component exists.
-- The only frontend source file currently present is `src/components/Footer.jsx`.
-- Therefore, `src/App.jsx` is the chosen **planned** integration file for the footer.
+As of this task, the repository contains the root layout file `src/App.jsx` as the main shell component.
 
 ## Chosen Integration File
-- **File:** `src/App.jsx` (planned; to be created as the root layout/main shell in a follow-up implementation task)
-- **Rationale:** `src/App.jsx` will be the root layout/main shell component that owns the page structure and renders the footer after the main content.
+- **File:** `src/App.jsx`
+- **Rationale:** `src/App.jsx` is the root layout/main shell component that owns the page structure and renders the footer after the main content.
 
 ## Footer Placement
-- The `<Footer />` component will be rendered **after** the `<main>` content element inside `src/App.jsx`.
-- It will be the last element in the root layout so it appears at the bottom of the page.
+- The `<Footer />` component is rendered **after** the <main> content element inside `src/App.jsx`.
+- It is the last element in the root layout so it appears at the bottom of the page.
 
 ## Copyright String
 - Format: `© {currentYear} {appName}`
