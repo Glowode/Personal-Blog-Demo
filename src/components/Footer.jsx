@@ -1,7 +1,9 @@
+import './Footer.css';
+
 function Footer() {
   const currentYear = new Date().getFullYear();
   return (
-    <footer>
+    <footer className="footer">
       © {currentYear} Acme Engineering
     </footer>
   );
