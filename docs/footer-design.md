@@ -3,9 +3,16 @@
 ## Status
 Decided for TASK-1088 (architecture decision only; footer is not implemented in this task).
 
+## Current Repository Structure
+As of this task, the repository contains **no root layout file yet**:
+
+- No `src/App.jsx`, `src/layout.tsx`, `index.html`, or other main shell component exists.
+- The only frontend source file currently present is `src/components/Footer.jsx`.
+- Therefore, `src/App.jsx` is the chosen **planned** integration file for the footer.
+
 ## Chosen Integration File
-- **File:** `src/App.jsx`
-- **Rationale:** `src/App.jsx` will serve as the root layout/main shell component of the frontend app. Currently the repository contains only `src/components/Footer.jsx`, so `src/App.jsx` is the planned shell that will render the page structure.
+- **File:** `src/App.jsx` (planned; to be created as the root layout/main shell in a follow-up implementation task)
+- **Rationale:** `src/App.jsx` will be the root layout/main shell component that owns the page structure and renders the footer after the main content.
 
 ## Footer Placement
 - The `<Footer />` component will be rendered **after** the `<main>` content element inside `src/App.jsx`.
@@ -26,4 +33,4 @@ Decided for TASK-1088 (architecture decision only; footer is not implemented in 
 - Styling will be applied by importing the CSS module into `Footer.jsx`.
 
 ## Out of Scope
-- Actual footer implementation in `Footer.jsx` will be completed in a follow-up implementation task.
+- Creating `src/App.jsx` and implementing the footer in `Footer.jsx` will be completed in a follow-up implementation task.

@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "echo \"All tests passed\" && exit 0"
+    "test": "node --test test/footer-design.test.js"
   }
 }
