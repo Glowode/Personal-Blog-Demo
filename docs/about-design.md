@@ -2,65 +2,138 @@
 
 ## Status
 Contract defined in TASK-1113. Implementation is intentionally **out of scope** for this task.
+No implementation files were changed. This document is the single source of truth for the
+later implementation tasks that create `src/components/About.jsx` and `test/about.test.js`.
 
 ## Repository Conventions (as inspected)
 
 ### Module system
-- `package.json` does **not** set `"type": "module"`, so plain `.js` files are loaded as **CommonJS** by Node.
-- Existing tests (`test/footer-design.test.js`, `src/components/Footer.test.js`) use CommonJS: `const { test } = require('node:test');` and `require('node:assert')`.
-- Package scripts are plain Node invocations, e.g. `"test": "node --test test/footer-design.test.js"`.
-- Source components under `src/` are authored as **ESM + JSX** (e.g. `import { useEffect, useState } from 'react';` in `src/components/PostDetail.jsx`, `import styles from './Footer.module.css';` in `src/components/Footer.jsx`). The bundler (Vite) transpiles these; Node itself does not load `.jsx` directly.
+- `package.json` does **not** set `"type": "module"`, so plain `.js` files are loaded as
+  **CommonJS** by Node.
+- Existing tests (`test/footer-design.test.js`) use CommonJS:
+  `const { test } = require('node:test');` and `require('node:assert/strict');`.
+- Package scripts are plain Node invocations, e.g.
+  `"test": "node --test test/footer-design.test.js"`.
+- Source components under `src/` are authored as **ESM + JSX**
+  (e.g. `import { useEffect, useState } from 'react';` in `src/components/PostDetail.jsx`,
+  `import styles from './Footer.module.css';` in `src/components/Footer.jsx`).
+  The bundler (Vite) transpiles these; Node itself cannot load `.jsx` directly.
+- Consequently `test/about.test.js` is **CommonJS** (`.js`) and must not `require()` the
+  `.jsx` source directly. It uses the static source-assertion strategy below.
 
 ### Component conventions
-- One component per file under `src/components/`, PascalCase filename matching the component name.
-- Components are declared as `function <Name>() { ... }` and exposed via `export default <Name>;` (see `src/App.jsx`, `src/components/PostDetail.jsx`).
-- Styling uses CSS Modules (`<Name>.module.css`) imported as `import styles from './<Name>.module.css';`.
+- One component per file under `src/components/`, PascalCase filename matching the
+  component name.
+- Components are declared as `function <Name>() { ... }` and exposed via
+  `export default <Name>;` (see `src/App.jsx`, `src/components/PostDetail.jsx`).
+- `src/App.jsx` additionally does `export { App };`; a named export alongside the default
+  export is acceptable but the default export is what the contract requires.
+- Styling uses CSS Modules (`<Name>.module.css`) imported as
+  `import styles from './<Name>.module.css';` (optional for About).
 
 ### Routing / link convention
 - There is **no router dependency** (no `react-router` in `package.json`).
-- Existing in-repo navigation is the plain platform primitive: `<a href="/">` style anchors. `src/components/PostDetail.jsx` reads `window.location.pathname` directly rather than using a router Link.
-- Therefore the home-page link in `About.jsx` **must** use a plain anchor: `<a href="/">...</a>`. Do **not** import a router `Link` component (none is available).
+- Existing in-repo navigation is the plain platform primitive: `<a href="/">` style anchors.
+  `src/components/PostDetail.jsx` reads `window.location.pathname` directly rather than
+  using a router `Link`.
+- Therefore the home-page link in `About.jsx` **must** use a plain anchor:
+  `<a href="/">...</a>`. Do **not** import a router `Link` component (none is available).
 
 ## Deliverables (exact paths)
 
-| Path | Purpose |
-| --- | --- |
-| `src/components/About.jsx` | The About React component. |
-| `test/about.test.js` | The Node test contract for the About component. |
+| Artifact | Path | Owner task |
+| --- | --- | --- |
+| Component | `src/components/About.jsx` | implementation task (not TASK-1113) |
+| Test | `test/about.test.js` | implementation task (not TASK-1113) |
 
-No other files are part of this contract. No implementation files are created or modified by TASK-1113.
+These two paths are **exact** and must not be renamed, relocated, or split.
 
-## `src/components/About.jsx` Contract
+## Contract: `src/components/About.jsx`
 
-1. **Default export**: the module must default-export a function **named `About`**:
+1. **Format**: JSX authored as ESM, matching `src/App.jsx` and `src/components/PostDetail.jsx`.
+2. **Default export**: the module must `export default About;`.
+3. **Named function**: the default-exported value must be a `function` whose `.name` is
+   `About`, i.e. declared as:
    ```jsx
-   function About() { /* ... */ }
+   function About() {
+     // ...
+   }
+
    export default About;
    ```
-   The function must be a declaration whose `.name === 'About'`.
-2. **Bio paragraph**: renders a short author bio as a paragraph (a `<p>` element) containing visible text.
-3. **Home link**: renders a link back to the home page using the existing convention: `<a href="/">...` (plain anchor, no router `Link`).
-4. **Authoring style**: ESM + JSX, consistent with the other files in `src/components/`.
-5. **Styling (optional)**: if styling is needed it must follow the CSS Module convention (`About.module.css`). Not required by this contract.
+   (A named function expression assigned to the default export is also acceptable as long
+   as the resulting default export is a function named `About`.)
+4. **Bio paragraph**: `About` must render a short author bio as a paragraph element,
+   i.e. it must return JSX containing a `<p>` element with non-empty text content.
+5. **Home-page link**: `About` must render a link back to the home page using the plain
+   anchor convention:
+   ```jsx
+   <a href="/">Back to home</a>
+   ```
+   The anchor text is not contractually fixed, but the `href="/"` target is mandatory and
+   no router `Link` import may be used.
+6. **No routing imports**: `About.jsx` must not import from `react-router` or any other
+   router package (none is installed).
+7. **Scope**: `About.jsx` is a presentational component. It must not read `window.location`,
+   fetch data, or perform side effects unless a later task explicitly extends the contract.
 
-## `test/about.test.js` Contract
+### Reference shape (illustrative, not prescriptive styling)
+```jsx
+function About() {
+  return (
+    <section>
+      <h1>About</h1>
+      <p>Short author bio goes here.</p>
+      <a href="/">Back to home</a>
+    </section>
+  );
+}
 
-- **Runner**: `node:test` (`const { test } = require('node:test');`).
-- **Assertions**: `node:assert/strict` (`const assert = require('node:assert/strict');`).
-- **Language**: CommonJS, matching the repo (package.json has no `"type": "module"`).
-- **Strategy**: Because Node cannot `import`/`require` a `.jsx` file directly (no loader registered in `package.json` scripts), the test uses the **static source assertion** strategy already established by `src/components/Footer.test.js`:
-  1. Assert the component file exists via `fs.existsSync(path.join(__dirname, '..', 'src', 'components', 'About.jsx'))`.
-  2. Read the file with `fs.readFileSync(..., 'utf8')` and assert on its source:
-     - it declares and default-exports a function named `About`, e.g. match `/function\s+About\s*\(/` and `/export\s+default\s+About\s*;/`;
-     - it renders a paragraph (`/<p[\s>]/`);
-     - it renders a home link (`/<a\s[^>]*href="\/"|<a\s[^>]*href=\{"\/"\}/`).
-- **Dynamic import alternative**: if a JSX-capable loader is later added to the repo scripts, a JSX-compatible dynamic `import()` of `../src/components/About.jsx` asserting `typeof mod.default === 'function' && mod.default.name === 'About'` is preferred. Until then, the static source assertion strategy is authoritative.
-- **Wiring**: the test must be runnable via `node --test test/about.test.js`; adding it to the package `test` script is a separate implementation concern and not part of this task.
+export default About;
+```
 
-## Acceptance Criteria Mapping
+## Contract: `test/about.test.js`
 
-- [x] Contract names exact paths `src/components/About.jsx` and `test/about.test.js`.
-- [x] Contract specifies `About.jsx` must default-export a function named `About`.
-- [x] Contract specifies bio and home-link rendering requirements.
-- [x] Contract specifies `node:test` / `node:assert/strict` assertion strategy and the repo module system.
-- [x] No implementation files are changed (this task only adds this design document).
+1. **Module system**: CommonJS (`.js`), matching `test/footer-design.test.js`.
+2. **Test harness**: Node's built-in test runner via
+   `const { test } = require('node:test');`.
+3. **Assertions**: Node's strict assert via
+   `const assert = require('node:assert/strict');`.
+4. **Loading strategy**: because Node cannot load `.jsx` directly (no `"type": "module"`,
+   no JSX loader configured), the test **must not** `require()`/`import()` `About.jsx`.
+   Instead it uses a **static source-assertion strategy**: read the component file as text
+   with `node:fs` and assert against the source string.
+   ```js
+   const fs = require('node:fs');
+   const path = require('node:path');
+
+   const componentPath = path.join(__dirname, '..', 'src', 'components', 'About.jsx');
+   const source = fs.existsSync(componentPath)
+     ? fs.readFileSync(componentPath, 'utf8')
+     : '';
+   ```
+   If a JSX-compatible dynamic-import strategy (e.g. a configured loader/transpiler) is
+   later made available in the repo, the test may switch to dynamically importing the
+   component and asserting on the export; the static strategy is the required fallback and
+   the default for this contract.
+5. **Required assertions**:
+   - **File exists**: `assert.ok(fs.existsSync(componentPath), ...)`.
+   - **Default-exports a function**: assert that the source declares `export default` and
+     that the default-exported symbol is a function named `About`, e.g.
+     `assert.match(source, /export\s+default\s+About\s*;/)` combined with
+     `assert.match(source, /function\s+About\s*\(/)`.
+   - **Bio rendered**: assert the source contains a paragraph element, e.g.
+     `assert.match(source, /<p[\s>]/)`.
+   - **Home link rendered**: assert the source contains an anchor to the home page, e.g.
+     `assert.match(source, /<a\s[^>]*href=["']\/["']/)`.
+6. **Style**: follow `test/footer-design.test.js` — one `test(...)` per behaviour with a
+   descriptive name, and no test-order dependencies.
+7. **Wiring**: the implementation task is responsible for adding `test/about.test.js` to the
+   `test` script in `package.json` (e.g.
+   `"test": "node --test test/footer-design.test.js test/about.test.js"`). The test file
+   itself must be runnable standalone via `node --test test/about.test.js`.
+
+## Out of scope
+- Creating `src/components/About.jsx` or `test/about.test.js` (that is a separate task).
+- Modifying `package.json`, `src/App.jsx`, or any existing component.
+- Adding routing libraries or changing the module system.
